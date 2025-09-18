@@ -1,0 +1,212 @@
+import React, { useEffect, useState } from 'react';
+import { Box, TextField, Typography, Button, Modal, IconButton } from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import dayjs from 'dayjs';
+import { toast } from 'react-toastify';
+import { Formik, Form } from 'formik';
+import * as Yup from 'yup';
+import Grid from '@mui/material/Grid';
+import MainCard from 'components/MainCard';
+import FormikAutocomplete from '../../common/formik-autocomplete';
+import CloseIcon from '@mui/icons-material/Close';
+
+const DisciplineModal = ({ open, setOpen, action, disciplineLevel, data, onAction }) => {
+  const [disableBtn, setDisableBtn] = useState(false);
+
+  const validationSchema = Yup.object({
+    effectiveDate: Yup.date().required('Effective Date is required'),
+    forLevel: Yup.string().required('Level is required')
+  });
+
+  useEffect(() => {
+    if (!open) setDisableBtn(false);
+  }, [open]);
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  return (
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
+      <Modal open={open} onClose={handleClose} disableEscapeKeyDown>
+        <Box
+          sx={{
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            padding: 3,
+            backgroundColor: 'white',
+            borderRadius: 2,
+            boxShadow: 24,
+            maxWidth: '650px', // You can adjust max width as per your needs
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-start',
+            justifyContent: 'flex-start',
+            position: 'relative'
+          }}
+        >
+          <IconButton
+            onClick={handleClose}
+            sx={{
+              position: 'absolute',
+              top: 10,
+              right: 10
+            }}
+          >
+            <CloseIcon fontSize="1.5em" />
+          </IconButton>
+
+          <Typography variant="h4" sx={{ marginBottom: 2 }}>
+            {action === 'edit' ? 'Update Discipline' : 'Create Discipline'}
+          </Typography>
+
+          <Formik
+            initialValues={{
+              effectiveDate: data?.effectiveDate || '',
+              forLevel: data?.forLevel || '',
+              description: data?.description || '',
+              reason: data?.reason || '',
+              receivedFrom: data?.receivedFrom || '',
+              rescindedDate: data?.rescindedDate || ''
+            }}
+            validationSchema={validationSchema}
+            onSubmit={(values) => {
+              onAction(values);
+            }}
+          >
+            {({ values, handleChange, errors, touched, setFieldValue, isSubmitting }) => (
+              <Form style={{ width: '100%' }}>
+                <Grid
+                  container
+                  spacing={2}
+                  sx={{
+                    maxHeight: '80vh',
+                    overflowY: 'auto',
+                    marginBottom: 5,
+                    paddingTop: 1
+                  }}
+                >
+                  <Grid container spacing={2} size={{ xs: 12 }}>
+                    <Grid size={{ xs: 6 }}>
+                      <DatePicker
+                        label="Effective Date"
+                        value={values.effectiveDate ? dayjs(values.effectiveDate) : null}
+                        onChange={(date) => setFieldValue('effectiveDate', date ? date.toISOString() : null)}
+                        slotProps={{
+                          textField: {
+                            fullWidth: true,
+                            size: 'small',
+                            InputLabelProps: { shrink: true },
+                            error: touched.effectiveDate && !!errors.effectiveDate,
+                            helperText: touched.effectiveDate && errors.effectiveDate
+                          }
+                        }}
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 6 }}>
+                      <FormikAutocomplete
+                        name="forLevel"
+                        filedName="name"
+                        options={disciplineLevel}
+                        getOptionLabel={(option) => option.name || ''}
+                        label="Level"
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12 }}>
+                      <TextField
+                        fullWidth
+                        label="Description"
+                        variant="outlined"
+                        name="description"
+                        value={values.description}
+                        onChange={handleChange}
+                        error={touched.description && !!errors.description}
+                        helperText={touched.description && errors.description}
+                        slotProps={{
+                          inputLabel: { shrink: true }
+                        }}
+                        size="small"
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12 }}>
+                      <TextField
+                        fullWidth
+                        multiline
+                        rows={3}
+                        label="Reason"
+                        variant="outlined"
+                        name="reason"
+                        value={values.reason}
+                        onChange={handleChange}
+                        error={touched.reason && !!errors.reason}
+                        helperText={touched.reason && errors.reason}
+                        slotProps={{
+                          inputLabel: { shrink: true }
+                        }}
+                        size="small"
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12 }}>
+                      <TextField
+                        fullWidth
+                        label="Received From"
+                        variant="outlined"
+                        name="receivedFrom"
+                        value={values.receivedFrom}
+                        onChange={handleChange}
+                        error={touched.receivedFrom && !!errors.receivedFrom}
+                        helperText={touched.receivedFrom && errors.receivedFrom}
+                        slotProps={{
+                          inputLabel: { shrink: true }
+                        }}
+                        size="small"
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12 }}>
+                      <DatePicker
+                        label="Rescinded Date"
+                        value={values.rescindedDate ? dayjs(values.rescindedDate) : null}
+                        onChange={(date) => setFieldValue('rescindedDate', date ? date.toISOString() : null)}
+                        slotProps={{
+                          textField: {
+                            fullWidth: true,
+                            size: 'small',
+                            InputLabelProps: { shrink: true },
+                            error: touched.rescindedDate && !!errors.rescindedDate,
+                            helperText: touched.rescindedDate && errors.rescindedDate
+                          }
+                        }}
+                      />
+                    </Grid>
+                  </Grid>
+                </Grid>
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    bottom: 20,
+                    right: 25,
+                    display: 'flex',
+                    gap: 2,
+                    marginTop: 1
+                  }}
+                >
+                  <Button disabled={disableBtn} type="submit" variant="contained" sx={{ width: 80, height: 30 }}>
+                    {action === 'edit' ? 'Update' : 'Create'}
+                  </Button>
+                  <Button onClick={() => handleClose()} variant="outlined" sx={{ width: 80, height: 30 }}>
+                    Cancel
+                  </Button>
+                </Box>
+              </Form>
+            )}
+          </Formik>
+        </Box>
+      </Modal>
+    </LocalizationProvider>
+  );
+};
+
+export default DisciplineModal;
